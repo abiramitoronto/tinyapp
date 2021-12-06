@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/abiramitoronto/tinyapp/issues"
   },
-  "homepage": "https://github.com/abiramitoronto/tinyapp#readme"
+  "homepage": "https://github.com/abiramitoronto/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
 }
