@@ -64,6 +64,24 @@ app.post("/urls/:url/delete", (req, res) => {
   res.redirect(`/urls`);
 });
 
+app.post("/urls/:shortURL", (req, res) => {
+  //console.log(req.params.shortURL);
+  //console.log("my response output" + res)
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  res.render("urls_show", templateVars);
+  //console.log(res.body);
+  //res.redirect(req.params.longURL);
+});
+
+app.post("/urls/:shortURL/edit", (req, res) => {
+  //console.log(req.body);  // Log the POST request body to the console
+  //res.send("Ok Short URL is " + generateRandomString());         // Respond with 'Ok' (we will replace this)
+  console.log("Request Param " + req.params.shortURL);
+  urlDatabase[req.params.shortURL] = req.body.longURL;
+  console.log(urlDatabase);
+  console.log("worked");
+  res.redirect(`/urls`);
+});
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
