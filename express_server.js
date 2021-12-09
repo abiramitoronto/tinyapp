@@ -54,7 +54,16 @@ const findUserByEmail = (email,users) => {
       return userdet;
     }
   } return false;
-} 
+}; 
+
+const authenticator = (email,password,users) => {
+  for (let itr in users) {
+    const usercred = users[itr];
+    if (usercred.email === email && usercred.password === password) {
+      return true;
+    }
+  } return false;
+};
 
 
 app.get("/", (req, res) => {
@@ -76,8 +85,11 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  username = req.params.username;
-  res.render("urls_new",username);
+  //username = req.params.username;
+  //res.render("urls_new",username);
+  const CookieUser = req.cookies['user_id'];
+  const templateVars = {user : users[CookieUser]};
+  res.render("urls_new",templateVars);
 });
 
 app.get("/urls/login", (req, res) => {
@@ -147,13 +159,17 @@ app.post("/login", (req, res) => {
   //const CookieUser = res.cookies['user_id'];
   //console.log(req.body.email);
   const userByEmail = findUserByEmail(req.body.email,users);
+  const email = req.body.email;
+  const password = req.body.password;
+  const cred_check = authenticator(email,password,users); 
+  if (cred_check) {
+    res.cookie("user_id",userByEmail.id);
+    res.redirect(`/login`);
+  } else {
+    res.status(404).send('!!!Error : Email ID and Password credentials are incorrect');
+  }
   //console.log("userbyEmail" + userByEmail);
-  res.cookie("user_id",userByEmail.id);
-  //const templateVars = {user : userByEmail,urls : urlDatabase};
-  //res.cookie('user_id',req.body.username);
-  //console.log("urls/login " + res.cookie('user_id'));
-  //console.log(res.cookie.user_id);
-  res.redirect(`/login`);
+  
 });
 
 app.post("/urls/logout", (req, res) => {
@@ -164,9 +180,9 @@ app.post("/urls/logout", (req, res) => {
   //  urls : urlDatabase
   //};
   const CookieUser = req.cookies['user_id'];
-  const templateVars = {user : users[CookieUser], urls : urlDatabase};
-  res.clearCookie('user_id',req.body.username);
-  console.log("urls/logout " + req.body.username);
+  const templateVars = {user : null, urls : urlDatabase};
+  res.clearCookie('user_id');
+  //console.log("urls/logout " + req.body.username);
   res.render(`urls_index`,templateVars);
 });
 
@@ -208,6 +224,7 @@ app.post("/register" , (req,res) => {
   const email = req.body.email;
   const password = req.body.password;
   const emailcheck = findEmailID(email);
+  const cred_check = authenticator(email,password,users); 
   if (email.length !== 0 && password.length !== 0) {
     console.log(emailcheck);
     if (emailcheck) { 
@@ -222,9 +239,8 @@ app.post("/register" , (req,res) => {
     } else {
       console.log("Email Working");
       res.status(404).send('!!!Error :Email ID Already Exists');
-    }
+    } 
   }
-   
   res.status(404).send('!!!Error :Enter Email ID and Password');
   
   
