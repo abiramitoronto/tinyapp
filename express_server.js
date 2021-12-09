@@ -32,6 +32,11 @@ const users = {
     id: "user2RandomID", 
     email: "user2@example.com", 
     password: "dishwasher-funk"
+  },
+  "aJ48lW": {
+    id: "aJ48lW", 
+    email: "user3@example.com", 
+    password: "funk"
   }
 }
 
@@ -76,6 +81,17 @@ const authenticator = (email,password,users) => {
   } return false;
 };
 
+const urlsforUserid = (id, urlsDB) => {
+  const filterID = {};
+  for (const itr in urlsDB) {
+    const userIDScan = urlsDB[itr];
+    if (userIDScan.userID === id) {
+      const tempObj = {longURL : userIDScan.longURL, userID : userIDScan.id};
+      filterID[itr] = tempObj;
+    }
+    console.log(filterID);
+  } return filterID;
+}
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -91,19 +107,33 @@ app.get("/hello", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const CookieUser = req.cookies['user_id'];
-  const templateVars = {user : users[CookieUser], urls : urlDatabase};
-  res.render("urls_index",templateVars);
+
+  if (CookieUser === undefined) {
+    const templateVars = {user : null, urls : null};
+    res.render("urls_index",templateVars);
+  } else {
+    const userToDisplay = urlsforUserid(CookieUser,urlDatabase);
+    const templateVars = {user : users[CookieUser], urls : userToDisplay};
+    res.render("urls_index",templateVars);
+  }
+  //const templateVars = {user : null, urls : null};
+  //res.render("urls_index",templateVars);  
+  //const templateVars = {user : null, urls : urlDatabase};
+  //res.render("urls_index",templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
   //username = req.params.username;
   //res.render("urls_new",username);
   const CookieUser = req.cookies['user_id'];
-  const templateVars = {user : users[CookieUser]};
+  
   console.log(CookieUser);
   if (CookieUser === undefined) {
+    const templateVars = {user : null};
     res.render("login",templateVars);
   } else {
+    const userToDisplay = urlsforUserid(CookieUser,urlDatabase);
+    const templateVars = {user : users[CookieUser]};
     res.render("urls_new",templateVars);
   }
 });
@@ -131,7 +161,8 @@ app.get("/urls/:shortURL", (req, res) => {
       const templateVars = {user : null, shortURL: null, longURL: null};
       res.render("login",templateVars)
     } else {
-      const templateVars = {user : users[CookieUser], shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL};
+      const usersToDisplay = urlsforUserid(CookieUser,urlDatabase); 
+      const templateVars = {user : users[CookieUser], urls : usersToDisplay};
       res.render("urls_show", templateVars);
     }
   } else {
@@ -152,9 +183,17 @@ app.get("/login", (req,res) => {
   const CookieUser = req.cookies['user_id'];
   //console.log("CookieUser" + CookieUser);
   //res.cookie("user_id",req.body.email);
-  const templateVars = {user : users[CookieUser],urls : urlDatabase};
-  res.render("urls_index",templateVars)
-})
+  if (CookieUser === undefined) {
+    const templateVars = {user : null, shortURL: null, longURL: null};
+    res.render("login",templateVars)
+  } else {
+    console.log(CookieUser);
+    const usersToDisplay = urlsforUserid(CookieUser,urlDatabase); 
+    const templateVars = {user : users[CookieUser], urls : usersToDisplay};
+    console.log("userstoDisplay " + usersToDisplay);
+    res.render("urls_index",templateVars)
+  }  
+});
 
 app.post("/urls", (req, res) => {
  // console.log(req.body);  // Log the POST request body to the console
@@ -208,7 +247,7 @@ app.post("/urls/logout", (req, res) => {
   //  urls : urlDatabase
   //};
   const CookieUser = req.cookies['user_id'];
-  const templateVars = {user : null, urls : urlDatabase};
+  const templateVars = {user : null, urls : null};
   res.clearCookie('user_id');
   //console.log("urls/logout " + req.body.username);
   res.render(`urls_index`,templateVars);
