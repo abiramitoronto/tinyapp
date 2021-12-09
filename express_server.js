@@ -9,6 +9,19 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
+}
+
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 
@@ -45,6 +58,11 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
   //console.log(res.body);
   //res.redirect(req.params.longURL);
+});
+
+app.get("/register", (req,res) => {
+
+res.render("register");  
 });
 
 app.post("/urls", (req, res) => {
