@@ -47,6 +47,15 @@ function findEmailID(email) {
   return true;
 }
 
+const findUserByEmail = (email,users) => {
+  for (let itr in users) {
+    const userdet = users[itr];
+    if (userdet.email === email) {
+      return userdet;
+    }
+  } return false;
+} 
+
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -71,10 +80,22 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new",username);
 });
 
+app.get("/urls/login", (req, res) => {
+  //console.log(req.params.shortURL);
+  //console.log("my response output" + res)
+  //const templateVars = { username : req.params.username, shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  const CookieUser = req.cookies['user_id'];
+  const templateVars = {user : users[CookieUser]};
+  res.render("login",templateVars);
+  //console.log(res.body);
+  //res.redirect(req.params.longURL);
+});
+
 app.get("/urls/:shortURL", (req, res) => {
   //console.log(req.params.shortURL);
   //console.log("my response output" + res)
   //const templateVars = { username : req.params.username, shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  console.log("get /urls/:shortURL");
   const CookieUser = req.cookies['user_id'];
   const templateVars = {user : users[CookieUser]};
   res.render("urls_show", templateVars);
@@ -87,6 +108,15 @@ app.get("/register", (req,res) => {
 
 res.render("register",templateVars);  
 });
+
+app.get("/login", (req,res) => {
+
+  const CookieUser = req.cookies['user_id'];
+  //console.log("CookieUser" + CookieUser);
+  //res.cookie("user_id",req.body.email);
+  const templateVars = {user : users[CookieUser],urls : urlDatabase};
+  res.render("urls_index",templateVars)
+})
 
 app.post("/urls", (req, res) => {
  // console.log(req.body);  // Log the POST request body to the console
@@ -101,11 +131,29 @@ app.post("/urls/login", (req, res) => {
   //console.log(req.body);  // Log the POST request body to the console
   //res.send("Ok Short URL is " + generateRandomString());         // Respond with 'Ok' (we will replace this)
   const CookieUser = req.cookies['user_id'];
+  //res.cookie("user_id",req.body.email);
   const templateVars = {user : users[CookieUser],urls : urlDatabase};
+  console.log("urls/login");
   //res.cookie('user_id',req.body.username);
   //console.log("urls/login " + res.cookie('user_id'));
   //console.log(res.cookie.user_id);
-  res.render(`urls_index`,templateVars);
+  res.render(`login`,templateVars);
+});
+
+app.post("/login", (req, res) => {
+  //console.log(req.body);  // Log the POST request body to the console
+  //res.send("Ok Short URL is " + generateRandomString());         // Respond with 'Ok' (we will replace this)
+  //console.log("login worked")
+  //const CookieUser = res.cookies['user_id'];
+  //console.log(req.body.email);
+  const userByEmail = findUserByEmail(req.body.email,users);
+  //console.log("userbyEmail" + userByEmail);
+  res.cookie("user_id",userByEmail.id);
+  //const templateVars = {user : userByEmail,urls : urlDatabase};
+  //res.cookie('user_id',req.body.username);
+  //console.log("urls/login " + res.cookie('user_id'));
+  //console.log(res.cookie.user_id);
+  res.redirect(`/login`);
 });
 
 app.post("/urls/logout", (req, res) => {
