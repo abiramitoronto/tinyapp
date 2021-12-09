@@ -6,9 +6,20 @@ const cookieParser = require('cookie-parser');
 
 app.set("view engine", "ejs");
 
+//const urlDatabase = {
+//  "b2xVn2": "http://www.lighthouselabs.ca",
+//  "9sm5xK": "http://www.google.com"
+//};
+
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: {
+      longURL: "https://www.tsn.ca",
+      userID: "aJ48lW"
+  },
+  i3BoGr: {
+      longURL: "https://www.google.ca",
+      userID: "aJ48lW"
+  }
 };
 
 const users = { 
@@ -89,7 +100,12 @@ app.get("/urls/new", (req, res) => {
   //res.render("urls_new",username);
   const CookieUser = req.cookies['user_id'];
   const templateVars = {user : users[CookieUser]};
-  res.render("urls_new",templateVars);
+  console.log(CookieUser);
+  if (CookieUser === undefined) {
+    res.render("login",templateVars);
+  } else {
+    res.render("urls_new",templateVars);
+  }
 });
 
 app.get("/urls/login", (req, res) => {
@@ -108,9 +124,19 @@ app.get("/urls/:shortURL", (req, res) => {
   //console.log("my response output" + res)
   //const templateVars = { username : req.params.username, shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   console.log("get /urls/:shortURL");
-  const CookieUser = req.cookies['user_id'];
-  const templateVars = {user : users[CookieUser]};
-  res.render("urls_show", templateVars);
+  const shorturl = req.body.shortURL;
+  if (users[shorturl]) {
+    const CookieUser = req.cookies['user_id'];
+    if (CookieUser === undefined) {
+      const templateVars = {user : null, shortURL: null, longURL: null};
+      res.render("login",templateVars)
+    } else {
+      const templateVars = {user : users[CookieUser], shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL};
+      res.render("urls_show", templateVars);
+    }
+  } else {
+    res.status(404).send('URL is not present in the DB');
+  }
   //console.log(res.body);
   //res.redirect(req.params.longURL);
 });
@@ -134,7 +160,9 @@ app.post("/urls", (req, res) => {
  // console.log(req.body);  // Log the POST request body to the console
   //res.send("Ok Short URL is " + generateRandomString());         // Respond with 'Ok' (we will replace this)
   const shorturl = generateRandomString();
-  urlDatabase[shorturl] = req.body.longURL;
+  const genUserID = generateUserID();
+  const urlDB = {longURL : req.body.longURL, userID : genUserID};
+  urlDatabase[shorturl] = urlDB;
   console.log(urlDatabase);
   res.redirect(`urls/${shorturl}`);
 });
@@ -201,7 +229,7 @@ app.post("/urls/:shortURL", (req, res) => {
   //console.log("my response output" + res)
   //const templateVars = { username : req.body.username, shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   const CookieUser = req.cookies['user_id'];
-  const templateVars = {user : users[CookieUser], shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
+  const templateVars = {user : users[CookieUser], shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL};
   console.log(res.cookie.user_id);
   res.render("urls_show", templateVars);
   //console.log(res.body);
@@ -212,7 +240,7 @@ app.post("/urls/:shortURL/edit", (req, res) => {
   //console.log(req.body);  // Log the POST request body to the console
   //res.send("Ok Short URL is " + generateRandomString());         // Respond with 'Ok' (we will replace this)
   console.log("Request Param " + req.params.shortURL);
-  urlDatabase[req.params.shortURL] = req.body.longURL;
+  urlDatabase[req.params.shortURL].longURL = req.body.longURL;
   console.log(urlDatabase);
   console.log("worked" + req.body.username);
   res.redirect(`/urls`);
