@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcryptjs');
 
 
 app.set("view engine", "ejs");
@@ -22,7 +23,7 @@ const urlDatabase = {
   }
 };
 
-const users = { 
+let users = { 
   "userRandomID": {
     id: "userRandomID", 
     email: "user@example.com", 
@@ -37,8 +38,13 @@ const users = {
     id: "aJ48lW", 
     email: "user3@example.com", 
     password: "funk"
+  },
+  "userxyz02": {
+    id: "userxyz02", 
+    email: "hashed@test.com", 
+    password: "$2a$10$zQvazZ/vVqf.IrDXEbHIBegl6i1zBcSuqlYadEiG8V4Gi0uy7FPMa"
   }
-}
+};
 
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
@@ -54,11 +60,15 @@ function generateUserID() {
 }
 
 function findEmailID(email) {
+  let count = 0;
   for (const val in users) {
-    const user = users[val];
+      const user = users[val]; 
       if (user.email === email) {
         return false;
       }
+      console.log(user.email);
+      count += 1; 
+      console.log(count);
   }
   return true;
 }
@@ -75,7 +85,8 @@ const findUserByEmail = (email,users) => {
 const authenticator = (email,password,users) => {
   for (let itr in users) {
     const usercred = users[itr];
-    if (usercred.email === email && usercred.password === password) {
+    console.log(users);
+    if (usercred.email === email && bcrypt.compareSync(password,usercred.password)) {
       return true;
     }
   } return false;
@@ -98,7 +109,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
+  res.json(users);
 });
 
 app.get("/hello", (req, res) => {
@@ -275,6 +286,41 @@ app.post("/urls/:shortURL", (req, res) => {
   //res.redirect(req.params.longURL);
 });
 
+app.post("/register", (req,res) => {
+
+  const id = generateUserID();
+  const email = req.body.email;
+  const password = req.body.password;
+  //console.log(email);
+  const emailcheck = findEmailID(email);
+  const hashedPassword = bcrypt.hashSync(password,10);
+  //console.log("hasdedPW " + hashedPassword);
+  //const cred_check = authenticator(email,hashedPassword,users); 
+  if (email.length === 0 || password.length === 0){
+    res.status(404).send('!!!Error :Enter Email ID and Password');
+    return;
+  }
+  if (!emailcheck) {    
+    console.log("Email Working");
+    res.status(404).send('!!!Error :Email ID Already Exists');
+    return;
+  }
+    //res.cookie("user_id",id);
+    //console.log("ID = " + id);
+    //console.log("Pass = " + hashedPassword);
+    //console.log("email = " + email);
+    //console.log("Users test = " + users);
+    const obj_test = {id : id,
+                      email : email,
+                      password : hashedPassword};
+    //console.log(obj_test);
+    users[id] = obj_test;
+    //console.log(users);
+    //console.log(urlDatabase);
+    //console.log(users);
+    res.redirect('/urls');
+})
+
 app.post("/urls/:shortURL/edit", (req, res) => {
   //console.log(req.body);  // Log the POST request body to the console
   //res.send("Ok Short URL is " + generateRandomString());         // Respond with 'Ok' (we will replace this)
@@ -284,36 +330,6 @@ app.post("/urls/:shortURL/edit", (req, res) => {
   console.log("worked" + req.body.username);
   res.redirect(`/urls`);
 });
-
-app.post("/register" , (req,res) => {
-
-  const id = generateUserID();
-  const email = req.body.email;
-  const password = req.body.password;
-  const emailcheck = findEmailID(email);
-  const cred_check = authenticator(email,password,users); 
-  if (email.length !== 0 && password.length !== 0) {
-    console.log(emailcheck);
-    if (emailcheck) { 
-    res.cookie("user_id",id);
-    const obj = {id,
-               email,
-               password};
-    users[id] = obj;
-    //console.log(users);
-    res.redirect('/urls');
-    return;
-    } else {
-      console.log("Email Working");
-      res.status(404).send('!!!Error :Email ID Already Exists');
-    } 
-  }
-  res.status(404).send('!!!Error :Enter Email ID and Password');
-  
-  
-});
-
-
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
