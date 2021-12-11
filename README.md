@@ -11,6 +11,11 @@ TinyApp is a full stack web application built with Node and Express that allows 
 ## Login Page 
 ![Login Page](https://github.com/abiramitoronto/tinyapp/blob/master/LoginPage.png)
 
+
+## Register Page
+![Login Page](https://github.com/abiramitoronto/tinyapp/blob/master/RegisterPage.png)
+
+
 ## Dependencies
 
 - Node.js
