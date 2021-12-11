@@ -4,8 +4,11 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 ## Final Product
 
+## Main Page ==> http://localhost:8080/urls 
+
 ![Main Page ==> http://localhost:8080/urls](https://github.com/abiramitoronto/tinyapp/blob/master/MainPage.png)
 
+## Login Page 
 ![Login Page](https://github.com/abiramitoronto/tinyapp/blob/master/LoginPage.png)
 
 ## Dependencies
