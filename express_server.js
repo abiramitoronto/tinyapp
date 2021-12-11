@@ -151,16 +151,16 @@ app.post("/register", (req,res) => {
   const id = generateUserID();
   const email = req.body.email;
   const password = req.body.password;
-  const emailcheck = findEmailID(email);
-  const hashedPassword = getHashedPassword(password);
   if (email.length === 0 || password.length === 0){
     res.status(404).send('!!!Error :Enter Email ID and Password');
     return;
   }
+  const emailcheck = findEmailID(email);
   if (!emailcheck) {    
     res.status(404).send('!!!Error :Email ID Already Exists');
     return;
   }
+  const hashedPassword = getHashedPassword(password);
   const obj_test = {id : id,
                     email : email,
                     password : hashedPassword};
