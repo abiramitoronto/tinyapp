@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 
+// In Memory URL database
 const urlDatabase = {
   b6UTxQ: {
       longURL: "https://www.tsn.ca",
@@ -11,6 +12,7 @@ const urlDatabase = {
   }
 };
 
+// In memory user database
 const users = { 
   "userRandomID": {
     id: "userRandomID", 
@@ -35,14 +37,17 @@ const users = {
 };
 
 
+// This function generates random 6 digit short URL
 function generateRandomString() {
-  return "abcde" + Math.floor(Math.random() * 4);
+  return Math.random().toString(36).substr(2,6);
 }
 
+// This function generates random userId to store in users database during registration process
 function generateUserID() {
   return "users" + Math.random().toString(36).substr(2,8);
 }
 
+// This function checks existance of input Email ID in users database during registration process
 function findEmailID(email) {
   let count = 0;
   for (const val in users) {
@@ -54,7 +59,7 @@ function findEmailID(email) {
   return true;
 }
 
-
+// This function pulls user ID that is attached to the Email ID
 const findUserByEmail = (email,users) => {
   for (let itr in users) {
     const userDetails = users[itr];
@@ -64,6 +69,7 @@ const findUserByEmail = (email,users) => {
   } return undefined;
 }; 
 
+// This function authenticates user id and hashed password against users database
 const authenticator = (email,password,users) => {
   for (let itr in users) {
     const userCred = users[itr];
@@ -73,6 +79,8 @@ const authenticator = (email,password,users) => {
   } return false;
 };
 
+
+// This function retrieves the URLs that are associated with the user ID
 const urlsforUserid = (id, urlsDB) => {
   const filterID = {};
   for (const itr in urlsDB) {
@@ -84,6 +92,7 @@ const urlsforUserid = (id, urlsDB) => {
   } return filterID;
 }
 
+// This function generates Hashed password to store in users database
 const getHashedPassword = (password) => {
   return bcrypt.hashSync(password,10);
 }
