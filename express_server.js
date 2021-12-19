@@ -85,17 +85,11 @@ app.get("/urls/login", (req, res) => {
 // GET request to redirect into Long URL page
 app.get("/u/:shortURL", (req, res) => {
   const shorturl = req.params.shortURL;
-  const cookieUser = req.session.user_id;
-  if (cookieUser === undefined) {
-    const templateVars = {user : null, shortURL: null, longURL: null};
-    res.render("login",templateVars)
+  const getLong  = urlDatabase[shorturl].longURL;
+  if (getLong.startsWith("http://") || getLong.startsWith("https://")) {
+    res.redirect(getLong);
   } else {
-    const getLong  = urlDatabase[shorturl].longURL;
-    if (getLong.startsWith("http://") || getLong.startsWith("https://")) {
-      res.redirect(getLong);
-    } else {
-      res.send("Invalid URL");
-    }
+    res.send("Invalid URL");
   }
 });
 
