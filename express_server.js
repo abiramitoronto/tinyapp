@@ -1,7 +1,6 @@
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
-const cookieParser = require('cookie-parser');
 const cookieSession = require('cookie-session')
 
 //setting EJS as template engine
@@ -21,9 +20,6 @@ app.use(cookieSession({
   // Cookie Options
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }))
-
-// Activate the Cookie Parser
-app.use(cookieParser());
 
 // GET request to route into Main page
 app.get("/", (req, res) => {
@@ -98,20 +94,24 @@ app.get("/urls/:shortURL", (req, res) => {
   const shorturl = req.params.shortURL;
   const cookieUser = req.session.user_id;
   if (cookieUser === undefined) {
-    const templateVars = {user : null, shortURL: null, longURL: null};
-    res.render("login",templateVars)
+    res.send("User is currently Not Logged On. Please Login and Try Again...")
   } else {
     const usersToDisplay = urlsforUserid(cookieUser,urlDatabase); 
     const keyArr = Object.keys(usersToDisplay);
-    let getShort = "";;
+    let getShort = "";
     for (const itr of keyArr) {
       if (usersToDisplay[itr].userID === cookieUser) {
         getShort = itr;
       }
     }
-    const getLong  = usersToDisplay[getShort].longURL;
-    const templateVars = {user : users[cookieUser], shortURL : getShort , longURL : getLong};
-    res.render("urls_show", templateVars);
+    if (getShort === "") {
+      res.send("The given ShortURL doesn't belong to the User. Please check My URLs to know the list of short URLs that belong to the User.");
+    } else {
+      const getLong  = usersToDisplay[getShort].longURL;
+      const templateVars = {user : users[cookieUser], shortURL : getShort , longURL : getLong};
+      res.render("urls_show", templateVars);
+    }
+    
   }
 });
 
@@ -199,9 +199,7 @@ app.post("/register", (req,res) => {
     return;
   }
   const hashedPassword = getHashedPassword(password);
-  const obj_test = {id : id,
-                    email : email,
-                    password : hashedPassword};
+  const obj_test = {id, email, password : hashedPassword};
   users[id] = obj_test;
   req.session.user_id = id;
   res.redirect('/urls');
